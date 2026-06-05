@@ -1,10 +1,10 @@
 # Install Goalplz
 
-This guide installs the local Codex plugin marketplace entry and the optional `/goalplz` prompt alias.
+This guide installs the local Codex plugin marketplace entry, the Goalplz plugin, and the optional `/goalplz` prompt alias.
 
 ## Requirements
 
-- Codex CLI on `PATH` for plugin marketplace registration. Without it, Goalplz can still install the compatibility skill and prompt alias.
+- Codex CLI on `PATH` for plugin marketplace registration and plugin installation. Without it, Goalplz can still install the compatibility skill and prompt alias.
 - Python 3.9+ for the helper scripts.
 - A local clone of this repository.
 
@@ -21,6 +21,7 @@ The installer:
 
 - Verifies the repository contains the expected plugin and prompt files.
 - Runs `codex plugin marketplace add <repo-root>` when the Codex CLI is available.
+- Runs `codex plugin add goalplz@goalplz-local` so the Goalplz skill appears in Codex's official skill list.
 - Uses `CODEX_CLI_PATH` from the environment or `${CODEX_HOME:-~/.codex}/config.toml` before falling back to the `codex` command on `PATH`.
 - Mirrors the skill into `${CODEX_HOME:-~/.codex}/skills/goalplz` as a compatibility fallback.
 - Copies `prompts/goalplz.md` to `${CODEX_HOME:-~/.codex}/prompts/goalplz.md`.
@@ -35,7 +36,11 @@ Register this repository as a local plugin marketplace:
 codex plugin marketplace add .
 ```
 
-Then install the plugin from the `Goalplz Local` marketplace in Codex.
+Then install the plugin from the `Goalplz Local` marketplace:
+
+```bash
+codex plugin add goalplz@goalplz-local
+```
 
 For compatibility with Codex environments that load user skills directly, copy the skill:
 
@@ -80,7 +85,7 @@ Validate repository structure:
 python scripts/verify.py
 ```
 
-Validate the installed compatibility skill, prompt alias, and Codex marketplace listing when available:
+Validate the installed compatibility skill, prompt alias, and Codex plugin status when available:
 
 ```bash
 python scripts/verify.py --installed
@@ -92,10 +97,10 @@ If the Codex CLI is unavailable but you still want to verify the prompt alias an
 python scripts/verify.py --installed --skip-marketplace
 ```
 
-For strict plugin marketplace validation, require the marketplace check:
+For strict plugin validation, require the Codex CLI checks:
 
 ```bash
-python scripts/install.py --require-marketplace
+python scripts/install.py --require-marketplace --require-plugin
 python scripts/verify.py --installed --require-marketplace
 ```
 

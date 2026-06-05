@@ -69,7 +69,7 @@ python scripts/install.py
 python scripts/verify.py --installed
 ```
 
-If the Codex CLI is unavailable, the installer still installs the compatibility skill and prompt alias. Use `--require-marketplace` when you want marketplace registration failure to stop the install.
+If the Codex CLI is unavailable, the installer still installs the compatibility skill and prompt alias. Use `--require-marketplace --require-plugin` when you want Codex plugin registration or installation failure to stop the install.
 
 On Windows, the installer prefers `CODEX_CLI_PATH` from Codex config before the WindowsApps `codex` alias, which avoids common app-alias permission failures.
 
@@ -77,9 +77,10 @@ From the repository root:
 
 ```bash
 codex plugin marketplace add .
+codex plugin add goalplz@goalplz-local
 ```
 
-Then restart Codex and install `goalplz` from the `Goalplz Local` marketplace.
+Then restart Codex. `goalplz` should appear as an installed plugin from the `Goalplz Local` marketplace.
 
 For a manual local marketplace, Codex reads:
 

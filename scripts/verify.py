@@ -22,6 +22,8 @@ REQUIRED_REPO_FILES = [
     "prompts/goalplz.md",
 ]
 
+PLUGIN_SELECTOR = "goalplz@goalplz-local"
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
@@ -145,12 +147,12 @@ def verify_installed(root: Path, codex_home: Path, check_marketplace: bool, requ
         success = False
 
     if not check_marketplace:
-        ok("Skipped Codex marketplace list check")
+        ok("Skipped Codex plugin list check")
         return success
 
     codex = find_codex_cli(codex_home)
     if codex is None:
-        message = "Codex CLI not found on PATH; cannot verify marketplace list"
+        message = "Codex CLI not found on PATH; cannot verify plugin installation"
         if require_marketplace:
             fail(message)
             return False
@@ -159,14 +161,16 @@ def verify_installed(root: Path, codex_home: Path, check_marketplace: bool, requ
 
     try:
         result = subprocess.run(
-            [codex, "plugin", "marketplace", "list"],
+            [codex, "plugin", "list"],
             text=True,
+            encoding="utf-8",
+            errors="replace",
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=False,
         )
     except OSError as exc:
-        message = f"Could not run Codex CLI marketplace list: {exc}"
+        message = f"Could not run Codex CLI plugin list: {exc}"
         if require_marketplace:
             fail(message)
             return False
@@ -174,7 +178,7 @@ def verify_installed(root: Path, codex_home: Path, check_marketplace: bool, requ
         return success
     output = result.stdout or ""
     if result.returncode != 0:
-        message = "codex plugin marketplace list failed"
+        message = "codex plugin list failed"
         if require_marketplace:
             fail(message)
         else:
@@ -183,17 +187,21 @@ def verify_installed(root: Path, codex_home: Path, check_marketplace: bool, requ
             print(output.rstrip())
         return False if require_marketplace else success
 
-    if "goalplz" in output.lower() or str(root).lower() in output.lower():
-        ok("Codex marketplace list mentions Goalplz or this repository")
-    else:
-        message = "Codex marketplace list did not mention Goalplz or this repository"
-        if require_marketplace:
-            fail(message)
-        else:
-            warn(message)
+    matched_line = next(
+        (line for line in output.splitlines() if PLUGIN_SELECTOR in line),
+        "",
+    )
+    if not matched_line:
+        fail(f"Codex plugin list did not mention {PLUGIN_SELECTOR}")
         print(output.rstrip())
-        if require_marketplace:
-            success = False
+        return False
+
+    normalized = " ".join(matched_line.lower().split())
+    if "installed, enabled" in normalized:
+        ok(f"Codex plugin installed and enabled: {PLUGIN_SELECTOR}")
+    else:
+        fail(f"Codex plugin is not installed and enabled: {matched_line.strip()}")
+        success = False
 
     return success
 
@@ -201,8 +209,8 @@ def verify_installed(root: Path, codex_home: Path, check_marketplace: bool, requ
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify Goalplz.")
     parser.add_argument("--installed", action="store_true", help="Also verify local Codex installation.")
-    parser.add_argument("--skip-marketplace", action="store_true", help="Skip Codex CLI marketplace listing check.")
-    parser.add_argument("--require-marketplace", action="store_true", help="Fail if Codex marketplace verification fails.")
+    parser.add_argument("--skip-marketplace", action="store_true", help="Skip Codex CLI plugin installation check.")
+    parser.add_argument("--require-marketplace", action="store_true", help="Fail if Codex plugin verification cannot run.")
     parser.add_argument("--codex-home", type=Path, default=default_codex_home())
     args = parser.parse_args()
 

@@ -69,7 +69,7 @@ python scripts/install.py
 python scripts/verify.py --installed
 ```
 
-Codex CLI를 쓸 수 없는 환경에서도 installer는 compatibility skill과 prompt alias 설치를 계속한다. marketplace 등록 실패 시 설치를 중단하고 싶으면 `--require-marketplace`를 쓴다.
+Codex CLI를 쓸 수 없는 환경에서도 installer는 compatibility skill과 prompt alias 설치를 계속한다. Codex plugin 등록/설치 실패 시 설치를 중단하고 싶으면 `--require-marketplace --require-plugin`을 쓴다.
 
 Windows에서는 installer가 WindowsApps `codex` alias보다 Codex config의 `CODEX_CLI_PATH`를 먼저 사용해서 app alias 권한 문제를 피한다.
 
@@ -77,9 +77,10 @@ Windows에서는 installer가 WindowsApps `codex` alias보다 Codex config의 `C
 
 ```bash
 codex plugin marketplace add .
+codex plugin add goalplz@goalplz-local
 ```
 
-그 다음 Codex를 재시작하고 `Goalplz Local` marketplace에서 `goalplz`를 설치한다.
+그 다음 Codex를 재시작한다. `goalplz`가 `Goalplz Local` marketplace의 installed plugin으로 보여야 한다.
 
 수동 local marketplace 방식에서는 Codex가 이 파일을 읽는다:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install Goalplz local marketplace, skill fallback, and prompt alias."""
+"""Install Goalplz local marketplace, plugin, skill fallback, and prompt alias."""
 
 from __future__ import annotations
 
@@ -20,6 +20,8 @@ REQUIRED_REPO_FILES = [
     "plugins/goalplz/skills/goalplz/references/goal-patterns.md",
     "prompts/goalplz.md",
 ]
+
+PLUGIN_SELECTOR = "goalplz@goalplz-local"
 
 
 def repo_root() -> Path:
@@ -66,6 +68,8 @@ def run_codex_marketplace_add(root: Path, codex_home: Path) -> int:
         result = subprocess.run(
             [codex, "plugin", "marketplace", "add", str(root)],
             text=True,
+            encoding="utf-8",
+            errors="replace",
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=False,
@@ -80,6 +84,36 @@ def run_codex_marketplace_add(root: Path, codex_home: Path) -> int:
         print("[FAIL] Codex marketplace registration failed.")
     else:
         print("[OK] Codex marketplace registration command completed.")
+    return result.returncode
+
+
+def run_codex_plugin_add(codex_home: Path) -> int:
+    codex = find_codex_cli(codex_home)
+    if codex is None:
+        print("[WARN] Codex CLI not found on PATH; skipped plugin installation.")
+        print(f"[INFO] Run manually: codex plugin add {PLUGIN_SELECTOR}")
+        return 0
+
+    try:
+        result = subprocess.run(
+            [codex, "plugin", "add", PLUGIN_SELECTOR],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+    except OSError as exc:
+        print(f"[WARN] Could not run Codex plugin installation: {exc}")
+        print(f"[INFO] Run manually if needed: codex plugin add {PLUGIN_SELECTOR}")
+        return 1
+    if result.stdout.strip():
+        print(result.stdout.rstrip())
+    if result.returncode != 0:
+        print("[FAIL] Codex plugin installation failed.")
+    else:
+        print("[OK] Codex plugin installation command completed.")
     return result.returncode
 
 
@@ -109,6 +143,8 @@ def main() -> int:
     parser.add_argument("--codex-home", type=Path, default=default_codex_home())
     parser.add_argument("--skip-marketplace", action="store_true")
     parser.add_argument("--require-marketplace", action="store_true")
+    parser.add_argument("--skip-plugin", action="store_true")
+    parser.add_argument("--require-plugin", action="store_true")
     parser.add_argument("--skip-compat-skill", action="store_true")
     parser.add_argument("--skip-prompt", action="store_true")
     args = parser.parse_args()
@@ -125,6 +161,13 @@ def main() -> int:
     if not args.skip_marketplace:
         code = run_codex_marketplace_add(root, args.codex_home.expanduser())
         if code != 0 and args.require_marketplace:
+            return code
+        if code != 0:
+            print("[WARN] Continuing with compatibility skill and prompt alias install.")
+
+    if not args.skip_plugin:
+        code = run_codex_plugin_add(args.codex_home.expanduser())
+        if code != 0 and (args.require_plugin or args.require_marketplace):
             return code
         if code != 0:
             print("[WARN] Continuing with compatibility skill and prompt alias install.")

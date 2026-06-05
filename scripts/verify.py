@@ -96,11 +96,20 @@ def verify_repo(root: Path) -> bool:
         ok("SKILL.md advertises goalplz and /goalplz")
 
     prompt = (root / "prompts/goalplz.md").read_text(encoding="utf-8")
-    if "Use $goalplz" not in prompt or "$ARGUMENTS" not in prompt:
-        fail("prompts/goalplz.md does not route to $goalplz with arguments")
+    if "$ARGUMENTS" not in prompt:
+        fail("prompts/goalplz.md does not include slash command arguments")
         success = False
     else:
-        ok("Prompt alias routes to $goalplz")
+        ok("Prompt alias includes slash command arguments")
+
+    if "$goalplz" in prompt:
+        fail("prompts/goalplz.md still depends on $goalplz skill routing")
+        success = False
+    elif "Goalplz: active" not in prompt or "Goal fit:" not in prompt:
+        fail("prompts/goalplz.md does not contain the self-contained goalplz workflow")
+        success = False
+    else:
+        ok("Prompt alias is self-contained and does not route to $goalplz")
 
     return success
 

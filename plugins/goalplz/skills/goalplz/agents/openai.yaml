@@ -2,3 +2,5 @@ interface:
   display_name: "Goalplz"
   short_description: "Turn rough requests into auditable Codex goals."
   default_prompt: "Use $goalplz to turn this request into a clear Codex goal and run it when appropriate."
+policy:
+  allow_implicit_invocation: false

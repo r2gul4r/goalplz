@@ -1,6 +1,6 @@
 ---
 name: goalplz
-description: Convert rough user requests into strong Codex Goal mode objectives and run them when appropriate. Use when the user asks to use /goal, /goalplz, Goal mode, goalplz, make a goal prompt, keep working until done, or turn an unclear multi-step coding, debugging, optimization, migration, testing, research, or audit request into an evidence-checked completion contract.
+description: Convert rough user requests into strong Codex Goal mode objectives and run them when appropriate. Use only when the user explicitly invokes /goalplz, $goalplz, or asks for goalplz by name to turn an unclear multi-step coding, debugging, optimization, migration, testing, research, or audit request into an evidence-checked completion contract.
 ---
 
 # Goalplz

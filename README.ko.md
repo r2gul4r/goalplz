@@ -62,6 +62,17 @@ prompts/
 
 ## 로컬에 플러그인 설치
 
+빠른 설치:
+
+```bash
+python scripts/install.py
+python scripts/verify.py --installed
+```
+
+Codex CLI를 쓸 수 없는 환경에서도 installer는 compatibility skill과 prompt alias 설치를 계속한다. marketplace 등록 실패 시 설치를 중단하고 싶으면 `--require-marketplace`를 쓴다.
+
+Windows에서는 installer가 WindowsApps `codex` alias보다 Codex config의 `CODEX_CLI_PATH`를 먼저 사용해서 app alias 권한 문제를 피한다.
+
 저장소 루트에서 실행:
 
 ```bash
@@ -81,6 +92,8 @@ codex plugin marketplace add .
 ```text
 ./plugins/goalplz
 ```
+
+설치 스크립트는 사용자 skill을 직접 읽는 Codex 환경을 위해 `${CODEX_HOME:-~/.codex}/skills/goalplz`에도 compatibility skill을 미러링한다.
 
 ## `/goalplz` alias 설치
 
@@ -102,6 +115,16 @@ cp ./prompts/goalplz.md "${CODEX_HOME:-$HOME/.codex}/prompts/goalplz.md"
 ```
 
 새 스킬이나 prompt가 바로 보이지 않으면 Codex를 재시작하거나 새 스레드를 시작한다.
+
+전체 설치 흐름은 [INSTALL.md](./INSTALL.md)를 보면 된다.
+
+## 유지보수
+
+- [INSTALL.md](./INSTALL.md): Goalplz 로컬 설치와 검증.
+- [UPDATE.md](./UPDATE.md): 기존 설치 업데이트.
+- [UNINSTALL.md](./UNINSTALL.md): prompt alias, compatibility skill, marketplace entry 제거.
+- [CONTRIBUTING.md](./CONTRIBUTING.md): 기여 범위와 검증 명령.
+- [SECURITY.md](./SECURITY.md): 취약점 제보와 보안 기대사항.
 
 ## 검증
 

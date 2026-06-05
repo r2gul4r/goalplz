@@ -62,6 +62,17 @@ The plugin root is `plugins/goalplz`. The repository root is a local marketplace
 
 ## Install the plugin locally
 
+Quick install:
+
+```bash
+python scripts/install.py
+python scripts/verify.py --installed
+```
+
+If the Codex CLI is unavailable, the installer still installs the compatibility skill and prompt alias. Use `--require-marketplace` when you want marketplace registration failure to stop the install.
+
+On Windows, the installer prefers `CODEX_CLI_PATH` from Codex config before the WindowsApps `codex` alias, which avoids common app-alias permission failures.
+
 From the repository root:
 
 ```bash
@@ -81,6 +92,8 @@ That marketplace points to:
 ```text
 ./plugins/goalplz
 ```
+
+The installer also mirrors the skill to `${CODEX_HOME:-~/.codex}/skills/goalplz` as a compatibility fallback for Codex environments that load user skills directly.
 
 ## Install the `/goalplz` alias
 
@@ -102,6 +115,16 @@ cp ./prompts/goalplz.md "${CODEX_HOME:-$HOME/.codex}/prompts/goalplz.md"
 ```
 
 Restart Codex or start a new thread if your surface does not pick up new prompts immediately.
+
+For the full install flow, see [INSTALL.md](./INSTALL.md).
+
+## Maintenance
+
+- [INSTALL.md](./INSTALL.md): install and verify Goalplz locally.
+- [UPDATE.md](./UPDATE.md): refresh an existing installation.
+- [UNINSTALL.md](./UNINSTALL.md): remove the prompt alias, compatibility skill, and marketplace entry.
+- [CONTRIBUTING.md](./CONTRIBUTING.md): contribution scope and checks.
+- [SECURITY.md](./SECURITY.md): vulnerability reporting and security expectations.
 
 ## Validate
 

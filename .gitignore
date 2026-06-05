@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+
+# Local editor state
+.idea/
+.vscode/
+
+# Temporary validation output
+*.tmp
+*.log

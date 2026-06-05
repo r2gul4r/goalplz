@@ -1,0 +1,34 @@
+{
+  "name": "goalplz",
+  "version": "0.1.0",
+  "description": "Turn rough requests into auditable Codex Goal mode objectives.",
+  "author": {
+    "name": "Goalplz Skill contributors"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "goals",
+    "skills",
+    "prompting",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Goalplz",
+    "shortDescription": "Turn rough requests into auditable Codex goals.",
+    "longDescription": "Goalplz converts rough, multi-step requests into clear Codex Goal mode objectives with outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop conditions.",
+    "developerName": "Goalplz Skill contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use /goalplz to make this request goal-ready.",
+      "Turn this debugging task into an auditable goal.",
+      "Draft a Goal mode objective for this migration."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

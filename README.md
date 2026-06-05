@@ -1,3 +1,7 @@
+<p align="right">
+  English | <a href="./README.ko.md">한국어</a>
+</p>
+
 # Goalplz
 
 Goalplz is a Codex plugin that turns rough requests into auditable Goal mode objectives.

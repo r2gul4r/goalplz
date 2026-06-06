@@ -24,6 +24,58 @@ REQUIRED_REPO_FILES = [
 
 PLUGIN_SELECTOR = "goalplz@goalplz-local"
 
+COMPILER_CONTRACT_MARKERS = [
+    "Goal Prompt Compiler",
+    "READY_GOAL",
+    "PLAN_FIRST",
+    "NEEDS_TIGHTENING",
+    "NOT_GOAL",
+    "REFUSE",
+    "route",
+    "context",
+    "provenance",
+    "risk",
+    "rollback",
+    "pause_triggers",
+    "evidence_log",
+    "renderer",
+    "approval",
+    "non_goals",
+]
+
+READY_GOAL_RENDER_MARKERS = [
+    "/goal",
+    "Context:",
+    "Scope:",
+    "Constraints:",
+    "Verification:",
+    "Pause if:",
+    "Done when:",
+]
+
+NON_READY_RENDER_MARKERS = [
+    "REASON:",
+    "BLOCKERS:",
+    "PLAN_OR_QUESTIONS:",
+    "QUALITY_CHECK:",
+]
+
+COMPILER_SCHEMA_KEYS = [
+    "schema_version",
+    "decision",
+    "context",
+    "provenance",
+    "task",
+    "scope",
+    "verification",
+    "risk",
+    "constraints",
+    "execution",
+    "assumptions",
+    "completion_conditions",
+    "renderer",
+]
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
@@ -77,6 +129,79 @@ def verify_json(path: Path, expected_name: str | None = None) -> bool:
     return True
 
 
+def verify_markers(label: str, text: str, markers: list[str]) -> bool:
+    normalized = text.lower()
+    missing = [marker for marker in markers if marker.lower() not in normalized]
+    if missing:
+        fail(f"{label} is missing required template markers: {', '.join(missing)}")
+        return False
+
+    ok(f"{label} contains the compiler contract markers")
+    return True
+
+
+def verify_compiled_blocks(label: str, text: str) -> bool:
+    blocks = re.findall(r"(?ms)^Compiled:\s*\n\s*```text\s*\n(.*?)\n```", text)
+    if not blocks:
+        fail(f"{label} does not contain any example Compiled blocks")
+        return False
+
+    success = True
+    for index, block in enumerate(blocks, start=1):
+        normalized = block.lower()
+        missing = []
+        if "status:" not in normalized:
+            missing.append("STATUS:")
+        if "route:" not in normalized:
+            missing.append("ROUTE:")
+        if "status: ready_goal" in normalized:
+            missing.extend(
+                marker
+                for marker in READY_GOAL_RENDER_MARKERS
+                if marker.lower() not in normalized
+            )
+        elif "status: plan_first" in normalized or "status: needs_tightening" in normalized:
+            missing.extend(
+                marker
+                for marker in NON_READY_RENDER_MARKERS
+                if marker.lower() not in normalized
+            )
+        if missing:
+            fail(f"{label} Compiled block {index} is missing markers: {', '.join(missing)}")
+            success = False
+
+    if success:
+        ok(f"{label} example Compiled blocks follow the compiler routes")
+
+    return success
+
+
+def verify_compiler_schema(label: str, text: str) -> bool:
+    match = re.search(r"(?ms)^```json\s*\n(.*?)\n```", text)
+    if not match:
+        fail(f"{label} does not contain a compiler JSON schema block")
+        return False
+
+    try:
+        schema = json.loads(match.group(1))
+    except json.JSONDecodeError as exc:
+        fail(f"{label} compiler JSON schema is invalid JSON: {exc}")
+        return False
+
+    missing = [key for key in COMPILER_SCHEMA_KEYS if key not in schema]
+    if missing:
+        fail(f"{label} compiler JSON schema is missing keys: {', '.join(missing)}")
+        return False
+
+    renderer = schema.get("renderer", {})
+    if renderer.get("max_chars") != 4000 or renderer.get("overflow_strategy") != "write_contract_file":
+        fail(f"{label} compiler JSON schema does not declare the expected renderer limit strategy")
+        return False
+
+    ok(f"{label} compiler JSON schema is valid")
+    return True
+
+
 def verify_repo(root: Path) -> bool:
     success = True
     for rel in REQUIRED_REPO_FILES:
@@ -107,11 +232,21 @@ def verify_repo(root: Path) -> bool:
     if "$goalplz" in prompt:
         fail("prompts/goalplz.md still depends on $goalplz skill routing")
         success = False
-    elif "Goalplz: active" not in prompt or "Goal fit:" not in prompt:
+    elif "Goalplz: active" not in prompt or "STATUS:" not in prompt:
         fail("prompts/goalplz.md does not contain the self-contained goalplz workflow")
         success = False
     else:
         ok("Prompt alias is self-contained and does not route to $goalplz")
+
+    patterns = (root / "plugins/goalplz/skills/goalplz/references/goal-patterns.md").read_text(encoding="utf-8")
+    for label, text in [
+        ("SKILL.md", skill),
+        ("prompts/goalplz.md", prompt),
+        ("goal-patterns.md", patterns),
+    ]:
+        success = verify_markers(label, text, COMPILER_CONTRACT_MARKERS) and success
+    success = verify_compiler_schema("goal-patterns.md", patterns) and success
+    success = verify_compiled_blocks("goal-patterns.md", patterns) and success
 
     return success
 

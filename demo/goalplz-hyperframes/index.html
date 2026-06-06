@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Goalplz Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div
+      id="goalplz-demo"
+      data-composition-id="goalplz-demo"
+      data-start="0"
+      data-duration="7.2"
+      data-track-index="0"
+      data-width="1920"
+      data-height="1080"
+    >
+      <main class="scene-content">
+        <header class="topbar">
+          <div>
+            <div class="brand">Goalplz</div>
+            <div class="subhead">rough prompt compiler for Codex Goal mode</div>
+          </div>
+          <div class="runtime">READY_GOAL</div>
+        </header>
+
+        <section class="workspace">
+          <article class="terminal input">
+            <div class="chrome">
+              <span></span>
+              <span></span>
+              <span></span>
+              <b>rough request</b>
+            </div>
+            <div class="body">
+              <div class="line muted">$ /goalplz</div>
+              <div class="line typed">fix the failing checkout tests and keep going until verified<span class="cursor">|</span></div>
+            </div>
+          </article>
+
+          <div class="arrow" aria-hidden="true">-&gt;</div>
+
+          <article class="terminal output">
+            <div class="chrome">
+              <span></span>
+              <span></span>
+              <span></span>
+              <b>compiled goal</b>
+            </div>
+            <div class="body goal-body">
+              <p class="status">STATUS: READY_GOAL</p>
+              <p><strong>/goal</strong> Reproduce the checkout failure, identify the root cause, and make the smallest safe change.</p>
+              <ul>
+                <li>Scope: checkout failure only</li>
+                <li>Constraint: do not skip or weaken tests</li>
+                <li>Verify: failing test before and after</li>
+                <li>Pause: failure cannot be reproduced</li>
+              </ul>
+            </div>
+          </article>
+        </section>
+
+        <footer class="footer">
+          <span>Rough prompt in. Scoped goal out.</span>
+          <span>github.com/r2gul4r/goalplz</span>
+        </footer>
+      </main>
+
+      <style>
+        #goalplz-demo {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #0d1117;
+          color: #e5e7eb;
+          font-family: monospace;
+          font-variant-ligatures: none;
+        }
+
+        .scene-content {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          height: 100%;
+          padding: 92px 112px 86px;
+          gap: 58px;
+          box-sizing: border-box;
+        }
+
+        .topbar,
+        .footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .brand {
+          color: #e5e7eb;
+          font-size: 58px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        .subhead {
+          margin-top: 16px;
+          color: #9ca3af;
+          font-size: 28px;
+        }
+
+        .runtime {
+          border: 1px solid rgba(52, 211, 153, 0.75);
+          border-radius: 999px;
+          padding: 15px 26px;
+          color: #34d399;
+          background: rgba(52, 211, 153, 0.07);
+          font-size: 24px;
+          font-weight: 800;
+        }
+
+        .workspace {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1.18fr);
+          align-items: center;
+          gap: 36px;
+          flex: 1;
+        }
+
+        .terminal {
+          min-height: 560px;
+          border: 1px solid #2d3748;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #111827;
+          box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+        }
+
+        .chrome {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          height: 66px;
+          border-bottom: 1px solid #2d3748;
+          padding: 0 28px;
+          background: #172033;
+          box-sizing: border-box;
+        }
+
+        .chrome span {
+          width: 15px;
+          height: 15px;
+          border-radius: 999px;
+          background: #2d3748;
+        }
+
+        .chrome span:nth-child(1) {
+          background: #f87171;
+        }
+
+        .chrome span:nth-child(2) {
+          background: #fbbf24;
+        }
+
+        .chrome span:nth-child(3) {
+          background: #34d399;
+        }
+
+        .chrome b {
+          margin-left: 12px;
+          color: #9ca3af;
+          font-size: 22px;
+          font-weight: 500;
+        }
+
+        .body {
+          padding: 52px 54px;
+          box-sizing: border-box;
+        }
+
+        .line {
+          font-size: 34px;
+          line-height: 1.52;
+        }
+
+        .muted {
+          color: #9ca3af;
+        }
+
+        .typed {
+          margin-top: 26px;
+          max-width: 620px;
+          color: #e5e7eb;
+        }
+
+        .cursor {
+          color: #60a5fa;
+        }
+
+        .arrow {
+          color: #60a5fa;
+          font-size: 56px;
+          font-weight: 800;
+          text-align: center;
+        }
+
+        .goal-body {
+          color: #e5e7eb;
+        }
+
+        .goal-body p,
+        .goal-body li {
+          font-size: 28px;
+          line-height: 1.45;
+        }
+
+        .goal-body p {
+          margin: 0 0 28px;
+        }
+
+        .goal-body strong {
+          color: #60a5fa;
+        }
+
+        .goal-body .status {
+          color: #34d399;
+          font-weight: 800;
+        }
+
+        .goal-body ul {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          margin: 0;
+          padding-left: 34px;
+          color: #cbd5e1;
+        }
+
+        .footer {
+          border-top: 1px solid #2d3748;
+          padding-top: 30px;
+          color: #9ca3af;
+          font-size: 27px;
+        }
+
+        .footer span:first-child {
+          color: #e5e7eb;
+          font-weight: 800;
+        }
+
+        .footer span:last-child {
+          color: #60a5fa;
+        }
+      </style>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({
+          paused: true,
+          defaults: { duration: 0.5, ease: "power2.out" },
+        });
+
+        tl.from(".topbar", { y: -24, opacity: 0, duration: 0.55, ease: "power3.out" }, 0.1);
+        tl.from(".input", { x: -34, opacity: 0, duration: 0.55, ease: "power2.out" }, 0.22);
+        tl.from(".typed", { clipPath: "inset(0 100% 0 0)", duration: 1.45, ease: "steps(54)" }, 0.8);
+        tl.to(".cursor", { opacity: 0.15, duration: 0.16, repeat: 8, yoyo: true, ease: "none" }, 0.8);
+        tl.from(".arrow", { x: -16, opacity: 0, duration: 0.36, ease: "power3.out" }, 2.25);
+        tl.from(".output", { x: 34, opacity: 0, duration: 0.58, ease: "power2.out" }, 2.45);
+        tl.from(".goal-body > *", { y: 18, opacity: 0, stagger: 0.16, duration: 0.42, ease: "power2.out" }, 2.95);
+        tl.from(".runtime", { scale: 0.9, opacity: 0, duration: 0.42, ease: "back.out(1.4)" }, 4.15);
+        tl.from(".footer", { y: 18, opacity: 0, duration: 0.45, ease: "power2.out" }, 5.05);
+        tl.to(".scene-content", { opacity: 0.96, duration: 0.5, ease: "power1.inOut" }, 6.75);
+
+        window.__timelines["goalplz-demo"] = tl;
+      </script>
+    </div>
+  </body>
+</html>

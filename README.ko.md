@@ -49,6 +49,8 @@ Use $goalplz to turn this request into a clear Codex goal and run it when approp
 
 Goalplz는 내부적으로 context, provenance, scope, verification, risk, pause trigger 같은 계약 필드를 만든다. 하지만 최종 출력이 항상 `Context:`, `Scope:`, `Verification:` 같은 고정 템플릿이어야 하는 것은 아니다. 짧게 충분하면 compact `/goal` 한 덩어리로 렌더링하고, 길어지면 별도 contract 파일을 참조하는 식으로 바꿀 수 있다.
 
+Goalplz 내부 schema, route/status 값, diagnostic wrapper key는 영어로 유지한다. 대신 사용자에게 보이는 prose는 요청의 주 언어를 따른다. 영어 요청이면 영어로, 한국어 요청이면 한국어로 렌더링한다. code, command, path, API 이름, 사용자가 준 identifier는 원문 그대로 둔다.
+
 사용한 fixture:
 
 - `test-fixtures/goalplz-realistic/checkout-failure.log`

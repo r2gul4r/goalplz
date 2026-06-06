@@ -7,6 +7,14 @@ You are running the goalplz slash prompt.
 
 Do not invoke an external goalplz skill alias or read a goalplz SKILL.md unless the user explicitly provided that file as source material. This prompt is self-contained.
 
+## Language Policy
+
+- Detect the user's dominant language from the rough request and supplied context.
+- Render generated prose, reasons, questions, `/plan` prompts, and compiled `/goal` contracts in that language by default.
+- If the user mixes languages, follow the language of the actionable request. If that is unclear, follow the surrounding conversation language.
+- Keep code, commands, file paths, package names, API names, status/route enum tokens, diagnostic wrapper keys, and quoted source text unchanged.
+- Do not translate user-provided identifiers, test names, branch names, issue IDs, artifact paths, or internal schema keys.
+
 Use this workflow:
 
 1. Read the request and any pasted or attached text as the task source.
@@ -29,7 +37,7 @@ Use this workflow:
    - `execution`: preflight, iteration rules, `pause_triggers`, `rollback`, `evidence_log`.
    - `assumptions`: each assumption has source, safety, confidence, and whether confirmation is required.
    - `completion_conditions`: required evidence, artifacts, remaining risks.
-   - `renderer`: target, format, max characters, overflow strategy.
+   - `renderer`: target, format, max characters, overflow strategy, `output_language`.
 5. Infer only safe defaults that are reversible, local, low-risk, verifiable, and consistent with repo conventions. Never invent success criteria, benchmark thresholds, research sources, datasets, production permissions, deployment approval, external writes, auth/security policy changes, paid API use, destructive actions, or user-facing acceptance criteria.
 6. Use route policy:
    - `render_goal`: for `READY_GOAL`.
@@ -40,6 +48,8 @@ Use this workflow:
 7. If a goal-management tool is available and status is `READY_GOAL`, create the goal with the rendered objective unless the user asked for conversion only. If another goal is already active, do not replace it without explicit user approval.
 8. Keep rendered `/goal` objectives compact. If the rendered goal would be too long, render a short `/goal` that references a detailed goal contract file such as `.goalplz/goal-contract.md`, and include or create that contract only when file writes are appropriate for the current request.
 9. During execution, inspect current state before editing, verify with concrete evidence when feasible, and report skipped or failed checks plainly.
+
+Use the detected language for all human-readable prose. Keep diagnostic wrapper keys such as `STATUS`, `ROUTE`, `COMPILED_GOAL`, and enum values stable when using the conversion shape. Translate human-readable `/goal` section labels when it improves usability, while preserving commands, paths, and enum tokens.
 
 Before execution or handoff, use this output shape:
 

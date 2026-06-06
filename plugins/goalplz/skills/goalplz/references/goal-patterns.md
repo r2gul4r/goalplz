@@ -6,6 +6,10 @@ Use these patterns after the `goalplz` workflow has triggered. Keep the final go
 
 Goalplz is a goal prompt compiler. Its internal output should be stricter than the rendered `/goal` prompt. Use the internal contract to prevent invention, route unsafe work away from Goal mode, and verify that the final prompt is executable.
 
+## Language Policy
+
+Keep internal files, schema keys, route/status values, and diagnostic wrapper keys in English. Detect the user's dominant language from the rough request and supplied context, then render human-readable prose, reasons, questions, `/plan` prompts, and compiled `/goal` contracts in that language by default. Preserve code, commands, paths, package names, API names, quoted source text, and user-provided identifiers exactly.
+
 ```json
 {
   "schema_version": "0.2",
@@ -113,7 +117,8 @@ Goalplz is a goal prompt compiler. Its internal output should be stricter than t
     "target": "codex_goal",
     "format": "compact_markdown | contract_file",
     "max_chars": 4000,
-    "overflow_strategy": "write_contract_file"
+    "overflow_strategy": "write_contract_file",
+    "output_language": "detected_from_user_request | conversation_language | user_specified"
   }
 }
 ```
@@ -197,7 +202,7 @@ Refactor/docs:
 
 ## Compact Goal Renderer Template
 
-For `READY_GOAL`, render a compact Markdown contract rather than raw JSON. Translate labels to the user's language when appropriate, but preserve the structure.
+For `READY_GOAL`, render a compact Markdown contract rather than raw JSON. Translate human-readable labels to the user's language when appropriate, but preserve the structure, commands, paths, and enum tokens.
 
 ```text
 /goal <One durable objective>.

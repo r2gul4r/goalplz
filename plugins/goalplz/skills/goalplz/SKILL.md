@@ -7,6 +7,14 @@ description: Compile rough coding requests like "fix this", "make it faster", "r
 
 Use this skill as a Goal Prompt Compiler. It decides whether Goal mode is warranted, extracts a contract from rough input, routes unsafe or underspecified work away from Goal mode, renders a Codex-ready `/goal` when appropriate, and starts or hands off that goal safely.
 
+## Language Policy
+
+- Detect the user's dominant language from the rough request and supplied context.
+- Render generated prose, reasons, questions, `/plan` prompts, and compiled `/goal` contracts in that language by default.
+- If the user mixes languages, follow the language of the actionable request. If that is unclear, follow the surrounding conversation language.
+- Keep code, commands, file paths, package names, API names, status/route enum tokens, diagnostic wrapper keys, and quoted source text unchanged.
+- Do not translate user-provided identifiers, test names, branch names, issue IDs, artifact paths, or internal schema keys.
+
 ## Workflow
 
 1. Classify and route the request.
@@ -30,7 +38,7 @@ Use this skill as a Goal Prompt Compiler. It decides whether Goal mode is warran
    - Execution: preflight, iteration rules, `pause_triggers`, `rollback`, `evidence_log`.
    - Assumptions: each assumption must include source, safety, confidence, and confirmation need.
    - Completion conditions: required evidence, artifacts, remaining risks.
-   - Renderer: target, format, max characters, overflow strategy.
+   - Renderer: target, format, max characters, overflow strategy, `output_language`.
 
 3. Handle missing detail with a gate.
    - Treat missing detail as `soft missing` when Codex can safely discover it locally before editing.
@@ -50,6 +58,7 @@ Use this skill as a Goal Prompt Compiler. It decides whether Goal mode is warran
 
 5. Render or hand off.
    - For `READY_GOAL`, render a compact Markdown `/goal` contract with Context, Scope, Constraints, Verification, Iteration, Pause if, and Done when.
+   - Translate human-readable contract labels to the user's language when it improves usability, while preserving commands, paths, and enum tokens.
    - If the goal would be too long, render a short `/goal` that references a contract file such as `.goalplz/goal-contract.md`; include or create the contract only when file writes are appropriate.
    - If a goal-management tool is available, create the goal with the rendered objective unless the user asked for conversion only.
    - If no goal-management tool is available, give the user a ready-to-paste `/goal ...` command.
@@ -69,6 +78,8 @@ Require explicit user approval before paid API calls, deploys, production writes
 If proxy evidence is used, label it as proxy support. If exact proof is impossible, preserve uncertainty in the final result instead of flattening it into success.
 
 ## Output Style
+
+Use the user's detected language for all human-readable prose. Keep diagnostic wrapper keys such as `STATUS`, `ROUTE`, `COMPILED_GOAL`, and enum values stable when using the conversion shape.
 
 When converting before execution, use this shape:
 

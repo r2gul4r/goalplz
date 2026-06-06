@@ -49,6 +49,8 @@ This test does not execute code changes or Goal mode. It checks what `/goal` pro
 
 Goalplz internally builds a contract with context, provenance, scope, verification, risk, pause triggers, and completion conditions. The final output does not have to be a fixed `Context:`, `Scope:`, `Verification:` template every time. If a compact prompt is enough, Goalplz renders a compact `/goal`; if the goal is too large, it can reference a separate contract file.
 
+Goalplz keeps its internal schema, route/status values, and diagnostic wrapper keys in English, but renders user-facing prose in the dominant language of the request. An English request should produce English prose; a Korean request should produce Korean prose. Code, commands, paths, API names, and user-provided identifiers are preserved as written.
+
 Fixtures:
 
 - `test-fixtures/goalplz-realistic/checkout-failure.log`

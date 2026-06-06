@@ -39,6 +39,7 @@ COMPILER_CONTRACT_MARKERS = [
     "pause_triggers",
     "evidence_log",
     "renderer",
+    "output_language",
     "approval",
     "non_goals",
 ]
@@ -194,7 +195,11 @@ def verify_compiler_schema(label: str, text: str) -> bool:
         return False
 
     renderer = schema.get("renderer", {})
-    if renderer.get("max_chars") != 4000 or renderer.get("overflow_strategy") != "write_contract_file":
+    if (
+        renderer.get("max_chars") != 4000
+        or renderer.get("overflow_strategy") != "write_contract_file"
+        or "output_language" not in renderer
+    ):
         fail(f"{label} compiler JSON schema does not declare the expected renderer limit strategy")
         return False
 

@@ -1,0 +1,14 @@
+FAIL src/checkout/__tests__/applyCoupon.test.ts
+
+applyCoupon
+  x keeps the original subtotal when an expired coupon is rejected
+
+Expected: 12900
+Received: 0
+
+Stack:
+  src/checkout/applyCoupon.ts:42:16
+  src/checkout/__tests__/applyCoupon.test.ts:18:5
+
+Command:
+  npm test -- src/checkout/__tests__/applyCoupon.test.ts

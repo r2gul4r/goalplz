@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" role="img" aria-label="Mock mobile ProductCard reference">
+  <rect width="390" height="844" fill="#f7f7f7"/>
+  <rect x="20" y="72" width="350" height="480" rx="8" fill="#ffffff" stroke="#d4d4d4"/>
+  <rect x="36" y="88" width="318" height="240" rx="6" fill="#dbeafe"/>
+  <text x="48" y="365" font-family="Arial, sans-serif" font-size="13" fill="#2563eb">LIMITED DROP</text>
+  <text x="48" y="400" font-family="Arial, sans-serif" font-size="24" fill="#111827">Long title wraps to two lines</text>
+  <text x="48" y="433" font-family="Arial, sans-serif" font-size="24" fill="#111827">without clipping</text>
+  <text x="48" y="472" font-family="Arial, sans-serif" font-size="20" fill="#111827">$129.00</text>
+  <rect x="48" y="496" width="294" height="44" rx="6" fill="#2563eb"/>
+  <text x="145" y="524" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">Add to cart</text>
+</svg>

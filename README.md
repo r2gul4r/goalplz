@@ -4,13 +4,13 @@
 
 # Goalplz
 
-Goalplz is a Codex plugin that turns rough requests into auditable Goal mode objectives.
+Goalplz is a Codex plugin that compiles rough requests into safe, scoped, verifiable Codex Goal mode prompts.
 
 It packages a reusable `$goalplz` skill and an optional `/goalplz` custom prompt alias.
 
 ## Why
 
-Codex Goal mode works best when the objective has a concrete outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition. Goalplz rewrites vague multi-step requests into that shape before Codex starts working.
+Codex Goal mode works best when the objective has a concrete outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition. Goalplz does not merely fill a template: it first routes the request, builds a contract, then renders a Codex-ready `/goal`, `/plan`, tightening questions, normal prompt, or refusal.
 
 ## User-facing command
 
@@ -34,11 +34,115 @@ Use $goalplz to turn this request into a clear Codex goal and run it when approp
 
 ## What it does
 
-- Decides whether Goal mode is the right tool.
-- Converts a rough request into an auditable completion contract.
-- Captures outcome, verification surface, constraints, boundaries, iteration policy, and blocked stop condition.
-- Starts a goal when the current Codex surface supports goal-management tools.
-- Falls back to a ready-to-paste `/goal ...` command when direct goal creation is unavailable.
+- Decides whether Goal mode is the right tool and routes to `READY_GOAL`, `PLAN_FIRST`, `NEEDS_TIGHTENING`, `NOT_GOAL`, or `REFUSE`.
+- Extracts outcome, context, provenance, scope, verification, risk, constraints, rollback, pause triggers, and completion conditions from rough input.
+- Infers only safe, reversible gaps and never invents success criteria, permissions, external-system access, security posture, cost, or production impact.
+- Renders `READY_GOAL` as a compact Markdown `/goal` contract.
+- Routes unready requests to `/plan`, up to three blocking questions, a normal prompt, or refusal.
+- Starts a goal when the current Codex surface supports goal-management tools, and falls back to a ready-to-paste command when direct goal creation is unavailable.
+
+## Rough Prompt Conversion Test
+
+On 2026-06-06, local mock fixtures were created under `test-fixtures/goalplz-realistic/` and dry-run converted against the current `prompts/goalplz.md` and `$goalplz` skill rules.
+
+This test does not execute code changes or Goal mode. It checks what `/goal` prompt Goalplz renders when the user gives a rough request plus attached or targeted context.
+
+Goalplz internally builds a contract with context, provenance, scope, verification, risk, pause triggers, and completion conditions. The final output does not have to be a fixed `Context:`, `Scope:`, `Verification:` template every time. If a compact prompt is enough, Goalplz renders a compact `/goal`; if the goal is too large, it can reference a separate contract file.
+
+Fixtures:
+
+- `test-fixtures/goalplz-realistic/checkout-failure.log`
+- `test-fixtures/goalplz-realistic/checkout-performance-note.md`
+- `test-fixtures/goalplz-realistic/mock-paper.md`
+- `test-fixtures/goalplz-realistic/src/checkout/OrderSummary.tsx`
+- `test-fixtures/goalplz-realistic/src/components/ProductCard.tsx`
+- `test-fixtures/goalplz-realistic/assets/product-card-mobile-reference.svg`
+
+### Test 1: Attached Failure Log
+
+Input:
+
+```text
+/goalplz fix the broken test from the attached failure log
+
+Attachment:
+test-fixtures/goalplz-realistic/checkout-failure.log
+```
+
+Converted `/goal` prompt:
+
+```text
+/goal Use test-fixtures/goalplz-realistic/checkout-failure.log as the source of truth, reproduce the checkout test failure, identify the root cause, and make the smallest safe change so the failure passes. Do not delete, skip, or weaken tests. Run `npm test -- src/checkout/__tests__/applyCoupon.test.ts` before changes to record the baseline, then rerun the same test and related checkout checks after the fix. Pause and report if the failure cannot be reproduced or the only viable path weakens the test expectation.
+```
+
+### Test 2: Attached Performance Note
+
+Input:
+
+```text
+/goalplz make checkout faster based on the attached performance note
+
+Attachment:
+test-fixtures/goalplz-realistic/checkout-performance-note.md
+```
+
+Converted `/goal` prompt:
+
+```text
+/goal Use test-fixtures/goalplz-realistic/checkout-performance-note.md as the source of truth to reduce checkout createOrder p95 from 410ms to <=250ms while preserving payment authorization behavior and order total calculation. Do not invent benchmark thresholds or change payment/order-total policy. Compare baseline and result with `npm run bench -- checkout`, then run `npm test -- src/checkout` and `npm run typecheck`. Pause and report if the benchmark cannot run, p95 cannot be compared, or meeting the target requires payment/order-total behavior changes.
+```
+
+### Test 3: Attached Paper
+
+Input:
+
+```text
+/goalplz reproduce the attached paper, focusing on Table 2 first
+
+Attachment:
+test-fixtures/goalplz-realistic/mock-paper.md
+```
+
+Converted `/goal` prompt:
+
+```text
+/goal Use test-fixtures/goalplz-realistic/mock-paper.md as the source of truth to reproduce or audit TinyCache Table 2 and record results in reports/tinycache_table2_repro.md. Use the Table 2 F1, VRAM, Tokens/s values plus the reproduction notes dataset, metric, and command as the target. Run `python experiments/tinycache_eval.py --subset longbench_qa_tiny` when possible, and record a result-vs-paper comparison table, execution log, and missing conditions. If dataset, script, checkpoint, or compute constraints prevent exact reproduction, label the result as proxy evidence instead of exact reproduction.
+```
+
+### Test 4: Targeted Code File
+
+Input:
+
+```text
+/goalplz clean up src/checkout/OrderSummary.tsx; it is messy; do not change behavior
+
+Target file:
+test-fixtures/goalplz-realistic/src/checkout/OrderSummary.tsx
+```
+
+Converted `/goal` prompt:
+
+```text
+/goal Refactor test-fixtures/goalplz-realistic/src/checkout/OrderSummary.tsx for readability without behavior changes. Preserve `OrderSummaryProps`, rendering semantics, and price calculation policy; do not add features, change design, alter public APIs, or rewrite checkout architecture. Limit edits to the target file and directly required adjacent helpers, run relevant test/lint/typecheck when available, and report the diff summary. Pause and report if behavior-preserving cleanup requires broader structural changes.
+```
+
+### Test 5: UI File And Reference Image
+
+Input:
+
+```text
+/goalplz make ProductCard.tsx prettier on mobile using the attached screenshot
+
+Attachment/target:
+test-fixtures/goalplz-realistic/assets/product-card-mobile-reference.svg
+test-fixtures/goalplz-realistic/src/components/ProductCard.tsx
+```
+
+Converted `/goal` prompt:
+
+```text
+/goal Use test-fixtures/goalplz-realistic/assets/product-card-mobile-reference.svg and test-fixtures/goalplz-realistic/src/components/ProductCard.tsx to improve the mobile ProductCard layout while preserving desktop behavior and existing data flow. Do not change the product data model, cart behavior, or the full design system. Check the 390x844 mobile viewport against the reference, verify desktop still works, confirm Add to cart interaction, no text overlap, and no image alt/accessibility regression, then record visual evidence and remaining tradeoffs. Pause and report if the reference conflicts with the existing component contract.
+```
 
 ## Repository layout
 

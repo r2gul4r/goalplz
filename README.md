@@ -175,6 +175,20 @@ python scripts/verify.py --installed
 
 If the Codex CLI is unavailable, the installer still installs the compatibility skill and prompt alias. Use `--require-marketplace --require-plugin` when you want Codex plugin registration or installation failure to stop the install.
 
+By default, the installer avoids duplicate Goalplz skill entries. If the Codex plugin is installed and enabled, it removes the user-level compatibility skill fallback. If the plugin cannot be confirmed, it installs the fallback. Use `--with-compat-skill` only for Codex surfaces that do not load plugin skills directly.
+
+If `goalplz-local` is already registered from another repository path, run:
+
+```bash
+python scripts/install.py --replace-marketplace
+```
+
+If the plugin cache is stale or locked, run:
+
+```bash
+python scripts/install.py --reinstall-plugin
+```
+
 On Windows, the installer prefers `CODEX_CLI_PATH` from Codex config before the WindowsApps `codex` alias, which avoids common app-alias permission failures.
 
 From the repository root:
@@ -198,7 +212,7 @@ That marketplace points to:
 ./plugins/goalplz
 ```
 
-The installer also mirrors the skill to `${CODEX_HOME:-~/.codex}/skills/goalplz` as a compatibility fallback for Codex environments that load user skills directly.
+The installer mirrors the skill to `${CODEX_HOME:-~/.codex}/skills/goalplz` only when the Codex plugin is not confirmed installed, or when `--with-compat-skill` is passed. Installing both the plugin skill and compatibility skill can make Goalplz appear twice in the skill picker.
 
 ## Install the `/goalplz` alias
 

@@ -17,6 +17,20 @@ python scripts/install.py
 python scripts/verify.py --installed
 ```
 
+If `goalplz-local` points at an older clone or Codex worktree, replace the marketplace entry:
+
+```bash
+python scripts/install.py --replace-marketplace
+python scripts/verify.py --installed
+```
+
+If the installed plugin cache is stale, force a remove/add cycle:
+
+```bash
+python scripts/install.py --reinstall-plugin
+python scripts/verify.py --installed
+```
+
 If the Codex CLI is unavailable, skip marketplace refresh and verify installed files:
 
 ```bash
@@ -30,13 +44,13 @@ The installer overwrites only the Goalplz prompt alias at:
 ${CODEX_HOME:-~/.codex}/prompts/goalplz.md
 ```
 
-It also refreshes the compatibility skill at:
+It installs the compatibility skill only when the Codex plugin is not confirmed installed and enabled, or when `--with-compat-skill` is passed. When the plugin is active, the installer removes the fallback at:
 
 ```text
 ${CODEX_HOME:-~/.codex}/skills/goalplz
 ```
 
-It does not edit unrelated prompts, skills, repositories, or user instructions.
+This prevents Goalplz from appearing twice in the skill picker. The installer does not edit unrelated prompts, skills, repositories, or user instructions.
 
 ## Refresh Codex
 

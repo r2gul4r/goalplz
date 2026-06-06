@@ -23,10 +23,29 @@ The installer:
 - Runs `codex plugin marketplace add <repo-root>` when the Codex CLI is available.
 - Runs `codex plugin add goalplz@goalplz-local` so the Goalplz skill appears in Codex's official skill list.
 - Uses `CODEX_CLI_PATH` from the environment or `${CODEX_HOME:-~/.codex}/config.toml` before falling back to the `codex` command on `PATH`.
-- Mirrors the skill into `${CODEX_HOME:-~/.codex}/skills/goalplz` as a compatibility fallback.
+- Mirrors the skill into `${CODEX_HOME:-~/.codex}/skills/goalplz` only when the Codex plugin is not confirmed installed and enabled.
+- Removes the compatibility skill when the plugin is installed and enabled, preventing duplicate Goalplz skill entries.
 - Copies `prompts/goalplz.md` to `${CODEX_HOME:-~/.codex}/prompts/goalplz.md`.
 
 Restart Codex or start a new thread after installation.
+
+If `goalplz-local` is already registered from another clone or Codex worktree, refresh the marketplace path:
+
+```bash
+python scripts/install.py --replace-marketplace
+```
+
+If the plugin cache is stale or locked, force a remove/add cycle:
+
+```bash
+python scripts/install.py --reinstall-plugin
+```
+
+If your Codex surface cannot load plugin skills directly and needs a user-level fallback, force that fallback:
+
+```bash
+python scripts/install.py --with-compat-skill
+```
 
 ## Manual Install
 
@@ -42,7 +61,7 @@ Then install the plugin from the `Goalplz Local` marketplace:
 codex plugin add goalplz@goalplz-local
 ```
 
-For compatibility with Codex environments that load user skills directly, copy the skill:
+For compatibility with Codex environments that load user skills directly, copy the skill. Do this only when the plugin skill is not available; installing both can show duplicate Goalplz skill entries.
 
 ```bash
 skill_dir="${CODEX_HOME:-$HOME/.codex}/skills/goalplz"
@@ -85,7 +104,7 @@ Validate repository structure:
 python scripts/verify.py
 ```
 
-Validate the installed compatibility skill, prompt alias, and Codex plugin status when available:
+Validate the prompt alias, Codex plugin status, and compatibility fallback when needed:
 
 ```bash
 python scripts/verify.py --installed
@@ -95,6 +114,12 @@ If the Codex CLI is unavailable but you still want to verify the prompt alias an
 
 ```bash
 python scripts/verify.py --installed --skip-marketplace
+```
+
+If you intentionally installed the user-level fallback, require it during verification:
+
+```bash
+python scripts/verify.py --installed --require-compat-skill
 ```
 
 For strict plugin validation, require the Codex CLI checks:

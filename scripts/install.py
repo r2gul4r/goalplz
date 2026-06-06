@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -22,6 +23,7 @@ REQUIRED_REPO_FILES = [
 ]
 
 PLUGIN_SELECTOR = "goalplz@goalplz-local"
+MARKETPLACE_NAME = "goalplz-local"
 
 
 def repo_root() -> Path:
@@ -87,6 +89,34 @@ def run_codex_marketplace_add(root: Path, codex_home: Path) -> int:
     return result.returncode
 
 
+def run_codex_marketplace_remove(codex_home: Path) -> int:
+    codex = find_codex_cli(codex_home)
+    if codex is None:
+        print("[WARN] Codex CLI not found on PATH; skipped marketplace removal.")
+        return 1
+
+    try:
+        result = subprocess.run(
+            [codex, "plugin", "marketplace", "remove", MARKETPLACE_NAME],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+    except OSError as exc:
+        print(f"[WARN] Could not run Codex CLI marketplace removal: {exc}")
+        return 1
+    if result.stdout.strip():
+        print(result.stdout.rstrip())
+    if result.returncode != 0:
+        print("[WARN] Codex marketplace removal did not complete.")
+    else:
+        print("[OK] Removed existing Codex marketplace entry.")
+    return result.returncode
+
+
 def run_codex_plugin_add(codex_home: Path) -> int:
     codex = find_codex_cli(codex_home)
     if codex is None:
@@ -117,6 +147,90 @@ def run_codex_plugin_add(codex_home: Path) -> int:
     return result.returncode
 
 
+def run_codex_plugin_remove(codex_home: Path) -> int:
+    codex = find_codex_cli(codex_home)
+    if codex is None:
+        print("[WARN] Codex CLI not found on PATH; skipped plugin removal.")
+        return 1
+
+    try:
+        result = subprocess.run(
+            [codex, "plugin", "remove", PLUGIN_SELECTOR],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+    except OSError as exc:
+        print(f"[WARN] Could not run Codex plugin removal: {exc}")
+        return 1
+    if result.stdout.strip():
+        print(result.stdout.rstrip())
+    if result.returncode != 0:
+        print("[WARN] Codex plugin removal did not complete.")
+    else:
+        print("[OK] Removed existing Codex plugin installation.")
+    return result.returncode
+
+
+def codex_plugin_enabled(codex_home: Path) -> bool | None:
+    codex = find_codex_cli(codex_home)
+    if codex is None:
+        return None
+
+    try:
+        result = subprocess.run(
+            [codex, "plugin", "list"],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+
+    matched_line = next(
+        (line for line in (result.stdout or "").splitlines() if PLUGIN_SELECTOR in line),
+        "",
+    )
+    if not matched_line:
+        return False
+
+    return "installed, enabled" in " ".join(matched_line.lower().split())
+
+
+def normalized_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="ignore").replace("\r\n", "\n")
+
+
+def plugin_cache_current(root: Path, codex_home: Path) -> bool:
+    plugin_json = root / "plugins" / "goalplz" / ".codex-plugin" / "plugin.json"
+    try:
+        version = json.loads(plugin_json.read_text(encoding="utf-8")).get("version")
+    except Exception:
+        return False
+    if not version:
+        return False
+
+    cache_root = codex_home / "plugins" / "cache" / MARKETPLACE_NAME / "goalplz" / version
+    cache_skill = cache_root / "skills" / "goalplz" / "SKILL.md"
+    cache_manifest = cache_root / ".codex-plugin" / "plugin.json"
+    source_skill = root / "plugins" / "goalplz" / "skills" / "goalplz" / "SKILL.md"
+    if not cache_skill.is_file() or not cache_manifest.is_file():
+        return False
+
+    return (
+        normalized_text(source_skill) == normalized_text(cache_skill)
+        and normalized_text(plugin_json) == normalized_text(cache_manifest)
+    )
+
+
 def install_prompt(root: Path, codex_home: Path) -> None:
     source = root / "prompts" / "goalplz.md"
     target_dir = codex_home / "prompts"
@@ -138,14 +252,46 @@ def install_compat_skill(root: Path, codex_home: Path) -> None:
     print(f"[OK] Installed compatibility skill: {target}")
 
 
+def remove_compat_skill_if_owned(root: Path, codex_home: Path) -> None:
+    target = codex_home / "skills" / "goalplz"
+    if not target.exists() and not target.is_symlink():
+        print("[OK] Compatibility skill is not installed; no duplicate skill entry.")
+        return
+
+    skill_file = target / "SKILL.md"
+    source_file = root / "plugins" / "goalplz" / "skills" / "goalplz" / "SKILL.md"
+    owned = False
+    if skill_file.is_file():
+        installed = skill_file.read_text(encoding="utf-8", errors="ignore")
+        source = source_file.read_text(encoding="utf-8", errors="ignore")
+        owned = installed == source or (
+            "name: goalplz" in installed
+            and "Goalplz" in installed
+            and "/goalplz" in installed
+        )
+
+    if not owned:
+        print(f"[WARN] Existing compatibility skill was not recognized as Goalplz; left unchanged: {target}")
+        return
+
+    if target.is_dir() and not target.is_symlink():
+        shutil.rmtree(target)
+    else:
+        target.unlink()
+    print(f"[OK] Removed compatibility skill to avoid duplicate Goalplz skill entries: {target}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Install Goalplz for Codex.")
     parser.add_argument("--codex-home", type=Path, default=default_codex_home())
     parser.add_argument("--skip-marketplace", action="store_true")
     parser.add_argument("--require-marketplace", action="store_true")
+    parser.add_argument("--replace-marketplace", action="store_true")
     parser.add_argument("--skip-plugin", action="store_true")
     parser.add_argument("--require-plugin", action="store_true")
+    parser.add_argument("--reinstall-plugin", action="store_true")
     parser.add_argument("--skip-compat-skill", action="store_true")
+    parser.add_argument("--with-compat-skill", action="store_true")
     parser.add_argument("--skip-prompt", action="store_true")
     args = parser.parse_args()
 
@@ -159,6 +305,8 @@ def main() -> int:
     print(f"[OK] Goalplz repository looks complete: {root}")
 
     if not args.skip_marketplace:
+        if args.replace_marketplace:
+            run_codex_marketplace_remove(args.codex_home.expanduser())
         code = run_codex_marketplace_add(root, args.codex_home.expanduser())
         if code != 0 and args.require_marketplace:
             return code
@@ -166,14 +314,28 @@ def main() -> int:
             print("[WARN] Continuing with compatibility skill and prompt alias install.")
 
     if not args.skip_plugin:
-        code = run_codex_plugin_add(args.codex_home.expanduser())
+        codex_home = args.codex_home.expanduser()
+        if args.reinstall_plugin:
+            run_codex_plugin_remove(codex_home)
+        if codex_plugin_enabled(codex_home) is True and plugin_cache_current(root, codex_home):
+            code = 0
+            print("[OK] Codex plugin already installed and cache matches repository.")
+        else:
+            code = run_codex_plugin_add(codex_home)
         if code != 0 and (args.require_plugin or args.require_marketplace):
             return code
         if code != 0:
             print("[WARN] Continuing with compatibility skill and prompt alias install.")
 
     if not args.skip_compat_skill:
-        install_compat_skill(root, args.codex_home.expanduser())
+        plugin_enabled = codex_plugin_enabled(args.codex_home.expanduser())
+        if args.with_compat_skill:
+            install_compat_skill(root, args.codex_home.expanduser())
+        elif plugin_enabled is True:
+            remove_compat_skill_if_owned(root, args.codex_home.expanduser())
+        else:
+            print("[WARN] Codex plugin is not confirmed installed and enabled; installing compatibility skill fallback.")
+            install_compat_skill(root, args.codex_home.expanduser())
 
     if not args.skip_prompt:
         install_prompt(root, args.codex_home.expanduser())

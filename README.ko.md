@@ -175,6 +175,20 @@ python scripts/verify.py --installed
 
 Codex CLI를 쓸 수 없는 환경에서도 installer는 compatibility skill과 prompt alias 설치를 계속한다. Codex plugin 등록/설치 실패 시 설치를 중단하고 싶으면 `--require-marketplace --require-plugin`을 쓴다.
 
+기본 설치는 Goalplz skill 중복 노출을 피한다. Codex plugin이 installed/enabled로 확인되면 user-level compatibility skill fallback을 제거하고, plugin이 확인되지 않을 때만 fallback을 설치한다. plugin skill을 직접 읽지 못하는 Codex 표면에서만 `--with-compat-skill`을 쓴다.
+
+`goalplz-local` marketplace가 다른 저장소 경로로 이미 등록되어 있으면 이렇게 갱신한다:
+
+```bash
+python scripts/install.py --replace-marketplace
+```
+
+plugin cache가 오래됐거나 잠겨 있으면 remove/add 사이클을 강제로 돌린다:
+
+```bash
+python scripts/install.py --reinstall-plugin
+```
+
 Windows에서는 installer가 WindowsApps `codex` alias보다 Codex config의 `CODEX_CLI_PATH`를 먼저 사용해서 app alias 권한 문제를 피한다.
 
 저장소 루트에서 실행:
@@ -198,7 +212,7 @@ codex plugin add goalplz@goalplz-local
 ./plugins/goalplz
 ```
 
-설치 스크립트는 사용자 skill을 직접 읽는 Codex 환경을 위해 `${CODEX_HOME:-~/.codex}/skills/goalplz`에도 compatibility skill을 미러링한다.
+설치 스크립트는 Codex plugin이 설치된 것으로 확인되지 않거나 `--with-compat-skill`을 넘긴 경우에만 `${CODEX_HOME:-~/.codex}/skills/goalplz`에 compatibility skill을 미러링한다. plugin skill과 compatibility skill을 둘 다 설치하면 skill picker에 Goalplz가 두 번 보일 수 있다.
 
 ## `/goalplz` alias 설치
 
